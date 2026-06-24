@@ -6,6 +6,7 @@ import { createHooks } from "../create-hooks"
 import { createManagers } from "../create-managers"
 import { createRuntimeTmuxConfig, isTmuxIntegrationEnabled } from "../create-runtime-tmux-config"
 import { createTools } from "../create-tools"
+import { augmentCategoriesFromUserAgents } from "../features/user-agent-categories"
 import { initializeOpenClaw } from "../openclaw"
 import { createPluginInterface } from "../plugin-interface"
 import { loadPluginConfig } from "../plugin-config"
@@ -39,6 +40,7 @@ export type PluginModuleDeps = {
   getSkillPluginConflictWarning: typeof getSkillPluginConflictWarning
   injectServerAuthIntoClient: typeof injectServerAuthIntoClient
   loadPluginConfig: typeof loadPluginConfig
+  augmentCategoriesFromUserAgents: typeof augmentCategoriesFromUserAgents
   initializeOpenClaw: typeof initializeOpenClaw
   isTmuxIntegrationEnabled: typeof isTmuxIntegrationEnabled
   startTmuxCheck: typeof startTmuxCheck
@@ -62,6 +64,7 @@ const defaultPluginModuleDeps: PluginModuleDeps = {
   getSkillPluginConflictWarning,
   injectServerAuthIntoClient,
   loadPluginConfig,
+  augmentCategoriesFromUserAgents,
   initializeOpenClaw,
   isTmuxIntegrationEnabled,
   startTmuxCheck,
@@ -93,6 +96,7 @@ export function createPluginModule(overrides: Partial<PluginModuleDeps> = {}): P
     deps.injectServerAuthIntoClient(input.client)
 
     const pluginConfig = deps.loadPluginConfig(input.directory, input)
+    deps.augmentCategoriesFromUserAgents(pluginConfig, input.directory)
     deps.setAgentSortOrder(pluginConfig.agent_order)
 
     if (pluginConfig.openclaw) {

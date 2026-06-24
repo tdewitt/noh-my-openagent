@@ -33,6 +33,17 @@ export function parseMarkdownAgentFile(filePath: string, scope: AgentScope): Loa
       mode: data.mode || "subagent",
       prompt: body.trim(),
       ...(modelString ? { model: modelString } : {}),
+      ...(typeof data.temperature === "number" ? { temperature: data.temperature } : {}),
+    }
+
+    if (data.permission) {
+      const permission: Record<string, string> = {}
+      if (data.permission.edit) permission.edit = data.permission.edit
+      if (data.permission.bash) permission.bash = data.permission.bash
+      if (data.permission.webfetch) permission.webfetch = data.permission.webfetch
+      if (Object.keys(permission).length > 0) {
+        config.permission = permission
+      }
     }
 
     const toolsConfig = parseToolsConfig(data.tools)

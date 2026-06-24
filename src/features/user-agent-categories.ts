@@ -25,7 +25,7 @@ function agentConfigToCategory(config: ClaudeCodeAgentConfig): CategoryConfig | 
 
   // Strip the scope prefix ("(user) ...", "(project) ...") injected by parseMarkdownAgentFile.
   // The scope prefix is useful for agent-switcher UI but is noise in Sisyphus's category table.
-  const rawDescription = config.description ?? ""
+  const rawDescription = (config.description as string | undefined) ?? ""
   const description = rawDescription.replace(/^\([^)]+\)\s*/, "").trim() || undefined
 
   // Clamp temperature to the valid API range [0, 2]. Out-of-range values bypass Zod
@@ -39,7 +39,7 @@ function agentConfigToCategory(config: ClaudeCodeAgentConfig): CategoryConfig | 
     ...(model ? { model } : {}),
     ...(temperature !== undefined ? { temperature } : {}),
     ...(description ? { description } : {}),
-    prompt_append: config.prompt,
+    prompt_append: config.prompt as string,
   }
 
   return category
@@ -50,7 +50,7 @@ function collectAgentsFromPaths(
 ): Record<string, ClaudeCodeAgentConfig> {
   const result: Record<string, ClaudeCodeAgentConfig> = Object.create(null)
   for (const dirPath of paths) {
-    const expanded = dirPath.startsWith("~/")
+    const expanded = dirPath === "~" || dirPath.startsWith("~/")
       ? dirPath.replace("~", process.env.HOME ?? "")
       : dirPath
     const agents = loadAgentsFromDir(expanded, "user")

@@ -6,7 +6,7 @@ import type { AgentScope, ClaudeCodeAgentConfig, LoadedAgent } from "./types"
 import { getOpenCodeConfigDir } from "../../shared/opencode-config-dir"
 import { parseMarkdownAgentFile } from "./agent-definitions-loader"
 
-function loadAgentsFromDir(agentsDir: string, scope: AgentScope): LoadedAgent[] {
+export function loadAgentsFromDir(agentsDir: string, scope: AgentScope): LoadedAgent[] {
   if (!existsSync(agentsDir)) {
     return []
   }
