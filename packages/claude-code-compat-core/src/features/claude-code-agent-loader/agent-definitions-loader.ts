@@ -5,7 +5,13 @@ import { log } from "../../shared/logger"
 import { parseToolsConfig } from "../../shared/parse-tools-config"
 import { parseJsonAgentFile } from "./json-agent-loader"
 import { mapClaudeModelToOpenCode } from "./claude-model-mapper"
-import type { AgentScope, AgentFrontmatter, ClaudeCodeAgentConfig, LoadedAgent } from "./types"
+import type {
+  AgentFrontmatter,
+  AgentFrontmatterPermission,
+  AgentScope,
+  ClaudeCodeAgentConfig,
+  LoadedAgent,
+} from "./types"
 
 export function parseMarkdownAgentFile(
   filePath: string,
@@ -42,6 +48,22 @@ export function parseMarkdownAgentFile(
     const toolsConfig = parseToolsConfig(data.tools)
     if (toolsConfig) {
       config.tools = toolsConfig
+    }
+
+    if (typeof data.temperature === "number") {
+      // Frontmatter bypasses the Zod config schema, so clamp to the valid API range [0, 2].
+      config.temperature = Math.min(2, Math.max(0, data.temperature))
+    }
+
+    if (data.permission) {
+      const permission: AgentFrontmatterPermission = {}
+      if (data.permission.edit) permission.edit = data.permission.edit
+      if (data.permission.bash) permission.bash = data.permission.bash
+      if (data.permission.webfetch) permission.webfetch = data.permission.webfetch
+      if (data.permission.task) permission.task = data.permission.task
+      if (Object.keys(permission).length > 0) {
+        config.permission = permission
+      }
     }
 
     return {

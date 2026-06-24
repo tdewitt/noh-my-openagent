@@ -114,6 +114,60 @@ Prompt.`
       expect(result?.config.mode).toBe("subagent")
     })
 
+    test("parses temperature and permission from frontmatter", () => {
+      const filePath = join(tempDir, "tuned-agent.md")
+      const content = `---
+name: tuned-agent
+description: A tuned agent
+temperature: 0.3
+permission:
+  edit: ask
+  bash: allow
+  webfetch: ask
+---
+
+Prompt.`
+
+      writeFileSync(filePath, content, "utf-8")
+
+      const result = parseMarkdownAgentFile(filePath, "opencode")
+
+      expect(result?.config.temperature).toBe(0.3)
+      expect(result?.config.permission).toEqual({ edit: "ask", bash: "allow", webfetch: "ask" })
+    })
+
+    test("clamps out-of-range temperature to [0, 2]", () => {
+      const filePath = join(tempDir, "hot-agent.md")
+      const content = `---
+name: hot-agent
+temperature: 5
+---
+
+Prompt.`
+
+      writeFileSync(filePath, content, "utf-8")
+
+      const result = parseMarkdownAgentFile(filePath, "opencode")
+
+      expect(result?.config.temperature).toBe(2)
+    })
+
+    test("omits permission when frontmatter has none", () => {
+      const filePath = join(tempDir, "plain-agent.md")
+      const content = `---
+name: plain-agent
+---
+
+Prompt.`
+
+      writeFileSync(filePath, content, "utf-8")
+
+      const result = parseMarkdownAgentFile(filePath, "opencode")
+
+      expect(result?.config.permission).toBeUndefined()
+      expect(result?.config.temperature).toBeUndefined()
+    })
+
     test("maps Claude aliases to configured anthropic provider", () => {
       const filePath = join(tempDir, "custom-provider.md")
       const content = `---
